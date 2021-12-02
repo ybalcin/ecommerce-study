@@ -11,5 +11,5 @@ type ProductRepository interface {
 	AddProduct(ctx context.Context, product *models.Product) error
 
 	// GetProduct gets product from collection
-	GetProduct(ctx context.Context, id models.ProductId) (*models.Campaign, error)
+	GetProduct(ctx context.Context, id models.ProductId) (*models.Product, error)
 }
