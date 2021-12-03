@@ -10,12 +10,12 @@ const (
 	createCampaignCommandNilError string = "create campaign command nil"
 	createOrderCommandNilError    string = "create order command nil"
 	createProductCommandNilError  string = "create product command nil"
-	increaseHourCommandNilError   string = "increase hour command nil"
+	increaseTimeCommandNilError   string = "increase time command nil"
 
 	createCampaignCommandHandlerNilError string = "create campaign command handler nil"
 	createOrderCommandHandlerNilError    string = "create order command handler nil"
 	createProductCommandHandlerNilError  string = "create product command handler nil"
-	increaseHourCommandHandlerNilError   string = "increase hour command handler nil"
+	increaseTimeCommandHandlerNilError   string = "increase time command handler nil"
 
 	getCampaignInfoQueryNilError string = "get campaign info query nil"
 	getProductInfoQueryNilError  string = "get product info query nil"
@@ -51,7 +51,7 @@ func ThrowCreateProductCommandHandlerCannotBeNilError() error {
 }
 
 func ThrowIncreaseHourCommandHandlerNilError() error {
-	return errors.New(increaseHourCommandHandlerNilError)
+	return errors.New(increaseTimeCommandHandlerNilError)
 }
 
 func ThrowGetCampaignInfoQueryHandlerCannotBeNilError() error {
@@ -74,8 +74,8 @@ func ThrowCreateOrderCommandCannotBeNilError() error {
 	return errors.New(createOrderCommandNilError)
 }
 
-func ThrowIncreaseHourCommandCannotBeNilError() error {
-	return errors.New(increaseHourCommandNilError)
+func ThrowIncreaseTimeCommandCannotBeNilError() error {
+	return errors.New(increaseTimeCommandNilError)
 }
 
 func ThrowCreateProductCommandCannotBeNilError() error {

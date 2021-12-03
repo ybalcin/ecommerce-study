@@ -20,8 +20,8 @@ type CreateCampaignCommandHandler struct {
 	systemTime         *application.SystemTime
 }
 
-// NewAddCampaignCommandHandler initializes NewAddCampaignCommandHandler
-func NewAddCampaignCommandHandler(
+// NewCreateCampaignCommandHandler initializes NewAddCampaignCommandHandler
+func NewCreateCampaignCommandHandler(
 	campaignRepository repositories.CampaignRepository,
 	systemTime *application.SystemTime) *CreateCampaignCommandHandler {
 
@@ -32,17 +32,17 @@ func NewAddCampaignCommandHandler(
 }
 
 // Handle handles CreateCampaignCommand
-func (h *CreateCampaignCommandHandler) Handle(ctx context.Context, c *CreateCampaignCommand) error {
+func (h *CreateCampaignCommandHandler) Handle(ctx context.Context, c *CreateCampaignCommand) (*createCampaignResponse, error) {
 	if h == nil {
-		return application.ThrowCreateCampaignCommandHandlerCannotBeNilError()
+		return nil, application.ThrowCreateCampaignCommandHandlerCannotBeNilError()
 	}
 
 	if c == nil {
-		return application.ThrowCreateCampaignCommandCannotNilError()
+		return nil, application.ThrowCreateCampaignCommandCannotNilError()
 	}
 
 	if err := h.validate(); err != nil {
-		return err
+		return nil, err
 	}
 
 	campaign, err := domain.NewCampaign(
@@ -57,14 +57,19 @@ func (h *CreateCampaignCommandHandler) Handle(ctx context.Context, c *CreateCamp
 		h.systemTime.Time())
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := h.campaignRepository.AddCampaign(ctx, campaign); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return NewCreateCampaignResponse(
+		campaign.Name(),
+		campaign.ProductCode(),
+		campaign.Duration(),
+		campaign.PriceManipulationLimit(),
+		campaign.TargetSalesCount()), nil
 }
 
 func (h *CreateCampaignCommandHandler) validate() error {

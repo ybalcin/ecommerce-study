@@ -26,3 +26,7 @@ func (t *SystemTime) Add(hours int) {
 	tt := t.time.Add(time.Hour * time.Duration(hours))
 	t.time = tt
 }
+
+func (t *SystemTime) String() string {
+	return t.time.Format("15:04")
+}

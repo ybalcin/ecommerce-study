@@ -153,7 +153,7 @@ func (c *Campaign) TargetFulfilled() bool {
 // CalculateDiscountRate calculates discount rate
 func (c *Campaign) CalculateDiscountRate(systemTime time.Time) int {
 	discountTimePart := c.priceManipulationLimit / c.duration
-	calculatedDiscountRate := (c.priceManipulationLimit/discountTimePart)*systemTime.Hour() + 1
+	calculatedDiscountRate := (c.priceManipulationLimit / discountTimePart) * (systemTime.Hour() + 1)
 
 	if calculatedDiscountRate > c.priceManipulationLimit {
 		return c.priceManipulationLimit

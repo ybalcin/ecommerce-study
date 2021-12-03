@@ -37,34 +37,34 @@ func NewCreateOrderCommandHandler(
 }
 
 // Handle handles CreateOrderCommand
-func (h *CreateOrderCommandHandler) Handle(ctx context.Context, c *CreateOrderCommand) error {
+func (h *CreateOrderCommandHandler) Handle(ctx context.Context, c *CreateOrderCommand) (*createOrderResponse, error) {
 	if h == nil {
-		return application.ThrowCreateOrderCommandHandlerCannotBeNilError()
+		return nil, application.ThrowCreateOrderCommandHandlerCannotBeNilError()
 	}
 
 	if err := h.validate(); err != nil {
-		return err
+		return nil, err
 	}
 
 	if c == nil {
-		return application.ThrowCreateOrderCommandCannotBeNilError()
+		return nil, application.ThrowCreateOrderCommandCannotBeNilError()
 	}
 
 	product, err := h.productRepository.GetProduct(ctx, c.ProductCode)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if product == nil {
-		return errors.New("product not found")
+		return nil, errors.New("product not found")
 	}
 
 	if !product.InStock() {
-		return errors.New("product out of stock")
+		return nil, errors.New("product out of stock")
 	}
 
 	campaign, err := h.campaignRepository.GetLatestCampaign(ctx, product.Code())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	campaignService := services.NewCampaignService(campaign)
@@ -72,17 +72,17 @@ func (h *CreateOrderCommandHandler) Handle(ctx context.Context, c *CreateOrderCo
 	if campaign != nil {
 		err = campaignService.ApplyCampaignAndUpdateFields(product, c.Quantity, c.Quantity*product.Price(), h.systemTime.Time())
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	order, err := domain.NewOrder(c.ProductCode, c.Quantity, product.Price())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err = h.orderRepository.AddOrder(ctx, order); err != nil {
-		return err
+		return nil, err
 	}
 
 	defer func(hh *CreateOrderCommandHandler, prd *domain.Product) {
@@ -94,7 +94,7 @@ func (h *CreateOrderCommandHandler) Handle(ctx context.Context, c *CreateOrderCo
 		h.campaignRepository.UpdateCampaign(ctx, campaign)
 	}(h, campaign)
 
-	return nil
+	return NewCreateOrderResponse(order.ProductCode(), order.Quantity()), nil
 }
 
 func (h *CreateOrderCommandHandler) validate() error {

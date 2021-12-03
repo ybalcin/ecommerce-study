@@ -42,3 +42,36 @@ func TestCampaign_IsActive(t *testing.T) {
 		assert.Equal(t, c.expected, actual)
 	}
 }
+
+func TestCampaign_CalculateDiscountRate(t *testing.T) {
+	testCases := []struct {
+		priceManipulationLimit int
+		duration               int
+		systemTime             time.Time
+		expected               int
+	}{
+		{20, 5, newSysTime(), 5},
+		{20, 5, newSysTime().Add(time.Hour), 10},
+		{20, 5, newSysTime().Add(time.Hour * time.Duration(2)), 15},
+		{20, 5, newSysTime().Add(time.Hour * time.Duration(3)), 20},
+		{20, 5, newSysTime().Add(time.Hour * time.Duration(4)), 20},
+		{20, 5, newSysTime().Add(time.Hour * time.Duration(5)), 20},
+	}
+
+	for _, c := range testCases {
+		campaign, err := domain.NewCampaign(
+			dummy,
+			dummy,
+			dummy,
+			c.duration,
+			c.priceManipulationLimit,
+			1,
+			0,
+			0,
+			time.Now())
+		assert.Nil(t, err)
+
+		actual := campaign.CalculateDiscountRate(c.systemTime)
+		assert.Equal(t, c.expected, actual)
+	}
+}

@@ -24,25 +24,29 @@ func NewCreateProductCommandHandler(productRepository repositories.ProductReposi
 	}
 }
 
-func (h *CreateProductCommandHandler) Handle(ctx context.Context, c *CreateProductCommand) error {
+func (h *CreateProductCommandHandler) Handle(ctx context.Context, c *CreateProductCommand) (*createProductResponse, error) {
 	if h == nil {
-		return application.ThrowCreateProductCommandHandlerCannotBeNilError()
+		return nil, application.ThrowCreateProductCommandHandlerCannotBeNilError()
 	}
 
 	if err := h.validate(); err != nil {
-		return err
+		return nil, err
+	}
+
+	if c == nil {
+		return nil, application.ThrowCreateProductCommandCannotBeNilError()
 	}
 
 	product, err := domain.NewProduct("", c.ProductCode, c.Price, c.Stock)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := h.productRepository.AddProduct(ctx, product); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return NewCreateProductResponse(product.Code(), product.Price(), product.Stock()), nil
 }
 
 func (h *CreateProductCommandHandler) validate() error {

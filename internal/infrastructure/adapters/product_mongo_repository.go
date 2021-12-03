@@ -80,8 +80,13 @@ func (r *productMongoRepository) GetProduct(ctx context.Context, productCode str
 
 // UpdateProduct updates product
 func (r *productMongoRepository) UpdateProduct(ctx context.Context, product *domain.Product) error {
+	id, err := primitive.ObjectIDFromHex(product.Id())
+	if err != nil {
+		return err
+	}
+
 	find := bson.M{
-		"_id": primitive.ObjectIDFromHex(product.Id()),
+		"_id": id,
 	}
 
 	if err := r.products.UpdateOne(ctx, find, product); err != nil {

@@ -126,8 +126,13 @@ func (r *campaignRepository) GetLatestCampaign(ctx context.Context, productCode 
 
 // UpdateCampaign updates campaign
 func (r *campaignRepository) UpdateCampaign(ctx context.Context, campaign *domain.Campaign) error {
+	id, err := primitive.ObjectIDFromHex(campaign.Id())
+	if err != nil {
+		return err
+	}
+
 	filter := bson.M{
-		"_id": primitive.ObjectIDFromHex(campaign.Id()),
+		"_id": id,
 	}
 
 	campaignBson, err := mapToCampaignBson(campaign)
