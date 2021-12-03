@@ -204,7 +204,7 @@ func applyCampaign(product *Product, discountRate int) {
 
 func (c *Campaign) calculateDiscountRate(systemTime *time.Time) int {
 	calculatedDuration := c.priceManipulationLimit / c.duration
-	calculatedDiscountRate := calculatedDuration * systemTime.Hour()
+	calculatedDiscountRate := calculatedDuration*systemTime.Hour() + 1
 
 	if calculatedDiscountRate > c.priceManipulationLimit {
 		return c.priceManipulationLimit
