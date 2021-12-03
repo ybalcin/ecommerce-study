@@ -2,9 +2,9 @@ package commands
 
 import (
 	"context"
+	"github.com/ybalcin/ecommerce-study/internal/application"
 	"github.com/ybalcin/ecommerce-study/internal/domain"
 	"github.com/ybalcin/ecommerce-study/internal/domain/repositories"
-	"time"
 )
 
 type CreateCampaignCommand struct {
@@ -17,17 +17,34 @@ type CreateCampaignCommand struct {
 
 type CreateCampaignCommandHandler struct {
 	campaignRepository repositories.CampaignRepository
+	systemTime         *application.SystemTime
 }
 
 // NewAddCampaignCommandHandler initializes NewAddCampaignCommandHandler
-func NewAddCampaignCommandHandler(campaignRepository repositories.CampaignRepository) *CreateCampaignCommandHandler {
+func NewAddCampaignCommandHandler(
+	campaignRepository repositories.CampaignRepository,
+	systemTime *application.SystemTime) *CreateCampaignCommandHandler {
+
 	return &CreateCampaignCommandHandler{
 		campaignRepository: campaignRepository,
+		systemTime:         systemTime,
 	}
 }
 
 // Handle handles CreateCampaignCommand
 func (h *CreateCampaignCommandHandler) Handle(ctx context.Context, c *CreateCampaignCommand) error {
+	if h == nil {
+		return application.ThrowCreateCampaignCommandHandlerCannotBeNilError()
+	}
+
+	if c == nil {
+		return application.ThrowCreateCampaignCommandCannotNilError()
+	}
+
+	if err := h.validate(); err != nil {
+		return err
+	}
+
 	campaign, err := domain.NewCampaign(
 		"",
 		c.Name,
@@ -37,7 +54,7 @@ func (h *CreateCampaignCommandHandler) Handle(ctx context.Context, c *CreateCamp
 		c.TargetSalesCount,
 		0,
 		0,
-		time.Now().UTC())
+		h.systemTime.Time())
 
 	if err != nil {
 		return err
@@ -45,6 +62,17 @@ func (h *CreateCampaignCommandHandler) Handle(ctx context.Context, c *CreateCamp
 
 	if err := h.campaignRepository.AddCampaign(ctx, campaign); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (h *CreateCampaignCommandHandler) validate() error {
+	if h.campaignRepository == nil {
+		return application.ThrowCampaignRepositoryCannotBeNilError()
+	}
+	if h.systemTime == nil {
+		return application.ThrowSystemTimeCannotBeNilError()
 	}
 
 	return nil

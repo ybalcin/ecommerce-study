@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/ybalcin/ecommerce-study/internal/application"
 	"github.com/ybalcin/ecommerce-study/internal/domain/repositories"
+	"github.com/ybalcin/ecommerce-study/internal/domain/services"
 )
 
 type GetCampaignInfoQuery struct {
@@ -37,6 +38,18 @@ func (h *GetCampaignInfoQueryHandler) Handle(
 	ctx context.Context,
 	q *GetCampaignInfoQuery) (*getCampaignInfoResponse, error) {
 
+	if h == nil {
+		return nil, application.ThrowGetCampaignInfoQueryHandlerCannotBeNilError()
+	}
+
+	if err := h.validate(); err != nil {
+		return nil, err
+	}
+
+	if q == nil {
+		return nil, application.ThrowGetCampaignInfoQueryNilError()
+	}
+
 	campaign, err := h.campaignRepository.GetCampaign(ctx, q.Name)
 	if err != nil {
 		return nil, err
@@ -47,11 +60,30 @@ func (h *GetCampaignInfoQueryHandler) Handle(
 		return nil, err
 	}
 
+	campaignService := services.NewCampaignService(campaign)
+
 	return NewGetCampaignInfoResponse(
 		campaign.Name(),
 		campaign.TargetSalesCount(),
 		campaign.Status(h.systemTime.Time()),
 		campaign.SalesCount(),
 		campaign.TurnOver(),
-		campaign.AverageSalePrice(orders)), nil
+		campaignService.CalculateAverageSalePrice(orders)), nil
+}
+
+func (h *GetCampaignInfoQueryHandler) validate() error {
+	if h.productRepository == nil {
+		return application.ThrowProductRepositoryCannotBeNil()
+	}
+	if h.systemTime == nil {
+		return application.ThrowSystemTimeCannotBeNilError()
+	}
+	if h.campaignRepository == nil {
+		return application.ThrowCampaignRepositoryCannotBeNilError()
+	}
+	if h.orderRepository == nil {
+		return application.ThrowOrderRepositoryCannotBeNilError()
+	}
+
+	return nil
 }

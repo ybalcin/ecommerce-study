@@ -2,7 +2,6 @@ package domain
 
 import (
 	"github.com/ybalcin/ecommerce-study/internal/domain/errors"
-	"github.com/ybalcin/ecommerce-study/internal/domain/utility"
 	"time"
 )
 
@@ -116,14 +115,12 @@ func (c *Campaign) CreatedAt() time.Time {
 }
 
 // IsActive returns campaign current status
-func (c *Campaign) IsActive(systemTime *time.Time) bool {
+func (c *Campaign) IsActive(systemTime time.Time) bool {
 	if c.TargetFulfilled() {
 		return false
 	}
 
-	endDate := utility.DropMillisecond(c.createdAt.Add(time.Hour * time.Duration(c.duration)))
-
-	if endDate.Before(utility.DropMillisecond(*systemTime)) {
+	if c.duration > systemTime.Hour() {
 		return true
 	}
 
@@ -131,24 +128,12 @@ func (c *Campaign) IsActive(systemTime *time.Time) bool {
 }
 
 // Status returns current status of campaign
-func (c *Campaign) Status(systemTime *time.Time) string {
+func (c *Campaign) Status(systemTime time.Time) string {
 	if c.IsActive(systemTime) {
 		return campaignStatusActive
 	}
 
 	return campaignStatusEnded
-}
-
-// AverageSalePrice returns average unit sale price of campaign
-func (c *Campaign) AverageSalePrice(orders []Order) int {
-	totalOrder := len(orders)
-	var unitPriceSum int
-
-	for _, o := range orders {
-		unitPriceSum += o.unitSalePrice
-	}
-
-	return unitPriceSum / totalOrder
 }
 
 // TurnOver returns turnover price of campaign
@@ -165,46 +150,10 @@ func (c *Campaign) TargetFulfilled() bool {
 	return false
 }
 
-// ApplyCampaignAndUpdateFields applies campaign and updates sales count, turnover
-func (c *Campaign) ApplyCampaignAndUpdateFields(
-	product *Product,
-	orderQuantity,
-	orderTotalPrice int,
-	systemTime *time.Time) error {
-
-	if err := c.ApplyCampaign(product, systemTime); err != nil {
-		return err
-	}
-
-	c.updateSalesCount(orderQuantity)
-	c.updateTurnOver(orderTotalPrice)
-
-	return nil
-}
-
-// ApplyCampaign applies campaign to product
-func (c *Campaign) ApplyCampaign(product *Product, systemTime *time.Time) error {
-	if !c.IsActive(systemTime) {
-		return nil
-	}
-
-	if c.productCode != product.Code() {
-		return errors.ThrowCampaignApplyProductCodesNotEqualError()
-	}
-
-	discountRate := c.calculateDiscountRate(systemTime)
-	applyCampaign(product, discountRate)
-
-	return nil
-}
-
-func applyCampaign(product *Product, discountRate int) {
-	product.price -= product.price * discountRate / 100
-}
-
-func (c *Campaign) calculateDiscountRate(systemTime *time.Time) int {
-	calculatedDuration := c.priceManipulationLimit / c.duration
-	calculatedDiscountRate := calculatedDuration*systemTime.Hour() + 1
+// CalculateDiscountRate calculates discount rate
+func (c *Campaign) CalculateDiscountRate(systemTime time.Time) int {
+	discountTimePart := c.priceManipulationLimit / c.duration
+	calculatedDiscountRate := (c.priceManipulationLimit/discountTimePart)*systemTime.Hour() + 1
 
 	if calculatedDiscountRate > c.priceManipulationLimit {
 		return c.priceManipulationLimit
@@ -213,10 +162,12 @@ func (c *Campaign) calculateDiscountRate(systemTime *time.Time) int {
 	return calculatedDiscountRate
 }
 
-func (c *Campaign) updateSalesCount(val int) {
+// UpdateSalesCount updates sales count
+func (c *Campaign) UpdateSalesCount(val int) {
 	c.salesCount += val
 }
 
-func (c *Campaign) updateTurnOver(val int) {
+// UpdateTurnOver updates turnover
+func (c *Campaign) UpdateTurnOver(val int) {
 	c.turnOver += val
 }

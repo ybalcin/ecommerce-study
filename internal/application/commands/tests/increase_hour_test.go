@@ -15,7 +15,7 @@ func TestNewIncreaseHourCommandHandler(t *testing.T) {
 
 	increaseHourCommandHandler.Handle(&commands.IncreaseHourCommand{Hours: 2})
 
-	if !sysTime.Time().After(*sysTimeSnapshot) {
+	if !sysTime.Time().After(sysTimeSnapshot) {
 		t.Fail()
 	}
 }

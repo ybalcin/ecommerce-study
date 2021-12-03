@@ -20,6 +20,28 @@ func NewIncreaseHourCommandHandler(systemTime *application.SystemTime) *Increase
 }
 
 // Handle handles IncreaseHourCommand
-func (h *IncreaseHourCommandHandler) Handle(c *IncreaseHourCommand) {
+func (h *IncreaseHourCommandHandler) Handle(c *IncreaseHourCommand) error {
+	if h == nil {
+		return application.ThrowIncreaseHourCommandHandlerNilError()
+	}
+
+	if err := h.validate(); err != nil {
+		return err
+	}
+
+	if c == nil {
+		return application.ThrowIncreaseHourCommandCannotBeNilError()
+	}
+
 	h.systemTime.Add(c.Hours)
+
+	return nil
+}
+
+func (h *IncreaseHourCommandHandler) validate() error {
+	if h.systemTime == nil {
+		return application.ThrowSystemTimeCannotBeNilError()
+	}
+
+	return nil
 }

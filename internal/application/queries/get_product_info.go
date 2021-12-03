@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/ybalcin/ecommerce-study/internal/application"
 	"github.com/ybalcin/ecommerce-study/internal/domain/repositories"
+	"github.com/ybalcin/ecommerce-study/internal/domain/services"
 )
 
 type GetProductInfoQuery struct {
@@ -17,8 +18,8 @@ type GetProductInfoQueryHandler struct {
 	systemTime         *application.SystemTime
 }
 
-// NewGetProductInfoHandler initializes NewGetProductInfoHandler
-func NewGetProductInfoHandler(
+// NewGetProductInfoQueryHandler initializes NewGetProductInfoHandler
+func NewGetProductInfoQueryHandler(
 	productRepository repositories.ProductRepository,
 	campaignRepository repositories.CampaignRepository,
 	orderRepository repositories.OrderRepository,
@@ -32,9 +33,22 @@ func NewGetProductInfoHandler(
 	}
 }
 
+// Handle handles GetProductInfoQuery
 func (h *GetProductInfoQueryHandler) Handle(
 	ctx context.Context,
 	q *GetProductInfoQuery) (*getProductInfoQueryResponse, error) {
+
+	if h == nil {
+		return nil, application.ThrowGetProductInfoQueryHandlerCannotNilError()
+	}
+
+	if err := h.validate(); err != nil {
+		return nil, err
+	}
+
+	if q == nil {
+		return nil, application.ThrowGetProductInfoQueryNilError()
+	}
 
 	product, err := h.productRepository.GetProduct(ctx, q.Code)
 	if err != nil {
@@ -46,11 +60,30 @@ func (h *GetProductInfoQueryHandler) Handle(
 		return nil, err
 	}
 
+	campaignService := services.NewCampaignService(campaign)
+
 	if campaign != nil {
-		if err := campaign.ApplyCampaign(product, h.systemTime.Time()); err != nil {
+		if err := campaignService.ApplyCampaign(product, h.systemTime.Time()); err != nil {
 			return nil, err
 		}
 	}
 
 	return NewGetProductInfoQueryResponse(product.Code(), product.Price(), product.Stock()), nil
+}
+
+func (h *GetProductInfoQueryHandler) validate() error {
+	if h.productRepository == nil {
+		return application.ThrowProductRepositoryCannotBeNil()
+	}
+	if h.campaignRepository == nil {
+		return application.ThrowCampaignRepositoryCannotBeNilError()
+	}
+	if h.orderRepository == nil {
+		return application.ThrowOrderRepositoryCannotBeNilError()
+	}
+	if h.systemTime == nil {
+		return application.ThrowSystemTimeCannotBeNilError()
+	}
+
+	return nil
 }

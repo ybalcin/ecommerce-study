@@ -58,6 +58,11 @@ func (p *Product) InStock() bool {
 	return p.stock > 0
 }
 
+// ApplyPrice sets new price
+func (p *Product) ApplyPrice(newPrice int) {
+	p.price = newPrice
+}
+
 // validate validates model
 func (p *Product) validate() error {
 
