@@ -2,7 +2,8 @@ package adapters
 
 import (
 	"context"
-	"github.com/ybalcin/ecommerce-study/internal/domain/models"
+	"errors"
+	"github.com/ybalcin/ecommerce-study/internal/domain"
 	"github.com/ybalcin/ecommerce-study/pkg/mgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -10,10 +11,10 @@ import (
 
 // productBson is collection store model
 type productBson struct {
-	Id          primitive.ObjectID `bson:"_id"`
-	ProductCode string             `bson:"product_code"`
-	Price       float64            `bson:"price"`
-	Stock       int                `bson:"stock"`
+	Id    primitive.ObjectID `bson:"_id"`
+	Code  string             `bson:"code"`
+	Price int                `bson:"price"`
+	Stock int                `bson:"stock"`
 }
 
 // productMongoRepository implements repositories.ProductRepository
@@ -32,26 +33,22 @@ func (p *productBson) hasValue() bool {
 }
 
 // NewProductMongoRepository initializes new product repository
-func NewProductMongoRepository(store *mgo.Store) *productMongoRepository {
+func NewProductMongoRepository(store *mgo.Store) (*productMongoRepository, error) {
 	if store == nil {
-		panic("adapters: mgo store is nil")
+		return nil, errors.New("adapters: store is nil")
 	}
 
-	return &productMongoRepository{products: store.Collection(productCollection)}
+	return &productMongoRepository{products: store.Collection(productCollection)}, nil
 }
 
 // AddProduct adds product to collection
-func (r *productMongoRepository) AddProduct(ctx context.Context, product *models.Product) error {
-	objId, err := mgo.ToObjectID(product.Id().String())
-	if err != nil {
-		return err
-	}
+func (r *productMongoRepository) AddProduct(ctx context.Context, product *domain.Product) error {
 
 	productBson := productBson{
-		Id:          objId,
-		ProductCode: product.ProductCode(),
-		Price:       product.Price(),
-		Stock:       product.Stock(),
+		Id:    primitive.NewObjectID(),
+		Code:  product.Code(),
+		Price: product.Price(),
+		Stock: product.Stock(),
 	}
 
 	if _, err := r.products.InsertOne(ctx, productBson); err != nil {
@@ -62,15 +59,10 @@ func (r *productMongoRepository) AddProduct(ctx context.Context, product *models
 }
 
 // GetProduct gets product from collection
-func (r *productMongoRepository) GetProduct(ctx context.Context, id models.ProductId) (*models.Product, error) {
+func (r *productMongoRepository) GetProduct(ctx context.Context, productCode string) (*domain.Product, error) {
 	productBson := new(productBson)
 
-	objId, err := mgo.ToObjectID(id.String())
-	if err != nil {
-		return nil, err
-	}
-
-	if err := r.products.FindOne(ctx, bson.M{"_id": objId}, productBson); err != nil {
+	if err := r.products.FindOne(ctx, bson.M{"code": productCode}, productBson); err != nil {
 		return nil, err
 	}
 
@@ -78,10 +70,23 @@ func (r *productMongoRepository) GetProduct(ctx context.Context, id models.Produ
 		return nil, nil
 	}
 
-	productModel, err := models.NewProduct(models.ProductId(productBson.Id.Hex()), productBson.ProductCode, productBson.Price, productBson.Stock)
+	productModel, err := domain.NewProduct(productBson.Id.Hex(), productBson.Code, productBson.Price, productBson.Stock)
 	if err != nil {
 		return nil, err
 	}
 
 	return productModel, nil
+}
+
+// UpdateProduct updates product
+func (r *productMongoRepository) UpdateProduct(ctx context.Context, product *domain.Product) error {
+	find := bson.M{
+		"_id": primitive.ObjectIDFromHex(product.Id()),
+	}
+
+	if err := r.products.UpdateOne(ctx, find, product); err != nil {
+		return err
+	}
+
+	return nil
 }
