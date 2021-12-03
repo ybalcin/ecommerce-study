@@ -1,8 +1,8 @@
-package commands
+package createcampaign
 
 import "fmt"
 
-type createCampaignResponse struct {
+type response struct {
 	Name                   string
 	ProductCode            string
 	Duration               int
@@ -10,8 +10,8 @@ type createCampaignResponse struct {
 	TargetSalesCount       int
 }
 
-func NewCreateCampaignResponse(name, productCode string, duration, limit, targetSalesCount int) *createCampaignResponse {
-	return &createCampaignResponse{
+func NewResponse(name, productCode string, duration, limit, targetSalesCount int) *response {
+	return &response{
 		Name:                   name,
 		ProductCode:            productCode,
 		Duration:               duration,
@@ -20,7 +20,7 @@ func NewCreateCampaignResponse(name, productCode string, duration, limit, target
 	}
 }
 
-func (r *createCampaignResponse) String() string {
+func (r *response) String() string {
 	return fmt.Sprintf("Campaign created; name %s, product %s, duration %d, limit %d, target sales count %d",
 		r.Name,
 		r.ProductCode,

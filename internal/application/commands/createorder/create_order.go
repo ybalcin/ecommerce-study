@@ -1,4 +1,4 @@
-package commands
+package createorder
 
 import (
 	"context"
@@ -9,26 +9,26 @@ import (
 	"github.com/ybalcin/ecommerce-study/internal/domain/services"
 )
 
-type CreateOrderCommand struct {
+type Command struct {
 	ProductCode string
 	Quantity    int
 }
 
-type CreateOrderCommandHandler struct {
+type Handler struct {
 	orderRepository    repositories.OrderRepository
 	productRepository  repositories.ProductRepository
 	campaignRepository repositories.CampaignRepository
 	systemTime         *application.SystemTime
 }
 
-// NewCreateOrderCommandHandler initializes new CreateOrderCommandHandler
-func NewCreateOrderCommandHandler(
+// NewHandler initializes new CreateOrderCommandHandler
+func NewHandler(
 	orderRepository repositories.OrderRepository,
 	productRepository repositories.ProductRepository,
 	campaignRepository repositories.CampaignRepository,
-	systemTime *application.SystemTime) *CreateOrderCommandHandler {
+	systemTime *application.SystemTime) *Handler {
 
-	return &CreateOrderCommandHandler{
+	return &Handler{
 		orderRepository:    orderRepository,
 		productRepository:  productRepository,
 		campaignRepository: campaignRepository,
@@ -37,7 +37,7 @@ func NewCreateOrderCommandHandler(
 }
 
 // Handle handles CreateOrderCommand
-func (h *CreateOrderCommandHandler) Handle(ctx context.Context, c *CreateOrderCommand) (*createOrderResponse, error) {
+func (h *Handler) Handle(ctx context.Context, c *Command) (*response, error) {
 	if h == nil {
 		return nil, application.ThrowCreateOrderCommandHandlerCannotBeNilError()
 	}
@@ -100,10 +100,10 @@ func (h *CreateOrderCommandHandler) Handle(ctx context.Context, c *CreateOrderCo
 		return nil, err
 	}
 
-	return NewCreateOrderResponse(order.ProductCode(), order.Quantity()), nil
+	return NewResponse(order.ProductCode(), order.Quantity()), nil
 }
 
-func (h *CreateOrderCommandHandler) validate() error {
+func (h *Handler) validate() error {
 	if h.campaignRepository == nil {
 		return application.ThrowCreateOrderCommandHandlerCannotBeNilError()
 	}

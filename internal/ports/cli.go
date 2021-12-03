@@ -2,19 +2,20 @@ package ports
 
 import (
 	"context"
+	"fmt"
 	"github.com/ybalcin/ecommerce-study/internal/app"
-	"github.com/ybalcin/ecommerce-study/internal/application/commands"
-	"github.com/ybalcin/ecommerce-study/internal/application/queries"
-	"log"
-	"os"
+	"github.com/ybalcin/ecommerce-study/internal/application/commands/createcampaign"
+	"github.com/ybalcin/ecommerce-study/internal/application/commands/createorder"
+	"github.com/ybalcin/ecommerce-study/internal/application/commands/createproduct"
+	"github.com/ybalcin/ecommerce-study/internal/application/commands/increasetime"
+	"github.com/ybalcin/ecommerce-study/internal/application/queries/getcampaigninfo"
+	"github.com/ybalcin/ecommerce-study/internal/application/queries/getproductinfo"
 )
 
 type cLI struct {
 	application *app.Application
 	ctx         context.Context
 }
-
-var logger = log.New(os.Stdout, "", log.LstdFlags)
 
 // NewCLI cli port
 func NewCLI() *cLI {
@@ -25,62 +26,62 @@ func NewCLI() *cLI {
 	return &cLI{application: applicationEntry}
 }
 
-func (cli *cLI) CreateCampaign(command *commands.CreateCampaignCommand) {
+func (cli *cLI) CreateCampaign(command *createcampaign.Command) {
 	resp, err := cli.application.Commands.CreateCampaign.Handle(cli.ctx, command)
 	if err != nil {
-		logger.Println(err.Error())
+		fmt.Println(err.Error())
 		return
 	}
 
-	logger.Println(resp.String())
+	fmt.Println(resp.String())
 }
 
-func (cli *cLI) CreateOrder(command *commands.CreateOrderCommand) {
+func (cli *cLI) CreateOrder(command *createorder.Command) {
 	resp, err := cli.application.Commands.CreateOrder.Handle(cli.ctx, command)
 	if err != nil {
-		logger.Println(err.Error())
+		fmt.Println(err.Error())
 		return
 	}
 
-	logger.Println(resp.String())
+	fmt.Println(resp.String())
 }
 
-func (cli *cLI) CreateProduct(command *commands.CreateProductCommand) {
+func (cli *cLI) CreateProduct(command *createproduct.Command) {
 	resp, err := cli.application.Commands.CreateProduct.Handle(cli.ctx, command)
 	if err != nil {
-		logger.Println(err.Error())
+		fmt.Println(err.Error())
 		return
 	}
 
-	logger.Println(resp.String())
+	fmt.Println(resp.String())
 }
 
-func (cli *cLI) IncreaseTime(command *commands.IncreaseTimeCommand) {
+func (cli *cLI) IncreaseTime(command *increasetime.Command) {
 	resp, err := cli.application.Commands.IncreaseTime.Handle(command)
 	if err != nil {
-		logger.Println(err.Error())
+		fmt.Println(err.Error())
 		return
 	}
 
-	logger.Println(resp.String())
+	fmt.Println(resp.String())
 }
 
-func (cli *cLI) GetCampaignInfo(query *queries.GetCampaignInfoQuery) {
+func (cli *cLI) GetCampaignInfo(query *getcampaigninfo.Query) {
 	resp, err := cli.application.Queries.GetCampaignInfo.Handle(cli.ctx, query)
 	if err != nil {
-		logger.Println(err.Error())
+		fmt.Println(err.Error())
 		return
 	}
 
-	logger.Println(resp.String())
+	fmt.Println(resp.String())
 }
 
-func (cli *cLI) GetProductInfo(query *queries.GetProductInfoQuery) {
+func (cli *cLI) GetProductInfo(query *getproductinfo.Query) {
 	resp, err := cli.application.Queries.GetProductInfo.Handle(cli.ctx, query)
 	if err != nil {
-		logger.Println(err.Error())
+		fmt.Println(err.Error())
 		return
 	}
 
-	logger.Println(resp.String())
+	fmt.Println(resp.String())
 }

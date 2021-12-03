@@ -1,4 +1,4 @@
-package commands
+package createcampaign
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/ybalcin/ecommerce-study/internal/domain/repositories"
 )
 
-type CreateCampaignCommand struct {
+type Command struct {
 	Name                   string
 	ProductCode            string
 	Duration               int
@@ -15,24 +15,24 @@ type CreateCampaignCommand struct {
 	TargetSalesCount       int
 }
 
-type CreateCampaignCommandHandler struct {
+type Handler struct {
 	campaignRepository repositories.CampaignRepository
 	systemTime         *application.SystemTime
 }
 
-// NewCreateCampaignCommandHandler initializes NewAddCampaignCommandHandler
-func NewCreateCampaignCommandHandler(
+// NewHandler initializes NewAddCampaignCommandHandler
+func NewHandler(
 	campaignRepository repositories.CampaignRepository,
-	systemTime *application.SystemTime) *CreateCampaignCommandHandler {
+	systemTime *application.SystemTime) *Handler {
 
-	return &CreateCampaignCommandHandler{
+	return &Handler{
 		campaignRepository: campaignRepository,
 		systemTime:         systemTime,
 	}
 }
 
 // Handle handles CreateCampaignCommand
-func (h *CreateCampaignCommandHandler) Handle(ctx context.Context, c *CreateCampaignCommand) (*createCampaignResponse, error) {
+func (h *Handler) Handle(ctx context.Context, c *Command) (*response, error) {
 	if h == nil {
 		return nil, application.ThrowCreateCampaignCommandHandlerCannotBeNilError()
 	}
@@ -64,7 +64,7 @@ func (h *CreateCampaignCommandHandler) Handle(ctx context.Context, c *CreateCamp
 		return nil, err
 	}
 
-	return NewCreateCampaignResponse(
+	return NewResponse(
 		campaign.Name(),
 		campaign.ProductCode(),
 		campaign.Duration(),
@@ -72,7 +72,7 @@ func (h *CreateCampaignCommandHandler) Handle(ctx context.Context, c *CreateCamp
 		campaign.TargetSalesCount()), nil
 }
 
-func (h *CreateCampaignCommandHandler) validate() error {
+func (h *Handler) validate() error {
 	if h.campaignRepository == nil {
 		return application.ThrowCampaignRepositoryCannotBeNilError()
 	}

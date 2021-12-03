@@ -1,4 +1,4 @@
-package queries
+package getproductinfo
 
 import (
 	"context"
@@ -8,25 +8,25 @@ import (
 	"github.com/ybalcin/ecommerce-study/internal/domain/services"
 )
 
-type GetProductInfoQuery struct {
+type Query struct {
 	Code string
 }
 
-type GetProductInfoQueryHandler struct {
+type Handler struct {
 	productRepository  repositories.ProductRepository
 	campaignRepository repositories.CampaignRepository
 	orderRepository    repositories.OrderRepository
 	systemTime         *application.SystemTime
 }
 
-// NewGetProductInfoQueryHandler initializes NewGetProductInfoHandler
-func NewGetProductInfoQueryHandler(
+// NewHandler initializes NewGetProductInfoHandler
+func NewHandler(
 	productRepository repositories.ProductRepository,
 	campaignRepository repositories.CampaignRepository,
 	orderRepository repositories.OrderRepository,
-	systemTime *application.SystemTime) *GetProductInfoQueryHandler {
+	systemTime *application.SystemTime) *Handler {
 
-	return &GetProductInfoQueryHandler{
+	return &Handler{
 		productRepository:  productRepository,
 		campaignRepository: campaignRepository,
 		orderRepository:    orderRepository,
@@ -34,10 +34,10 @@ func NewGetProductInfoQueryHandler(
 	}
 }
 
-// Handle handles GetProductInfoQuery
-func (h *GetProductInfoQueryHandler) Handle(
+// Handle handles Query
+func (h *Handler) Handle(
 	ctx context.Context,
-	q *GetProductInfoQuery) (*getProductInfoQueryResponse, error) {
+	q *Query) (*response, error) {
 
 	if h == nil {
 		return nil, application.ThrowGetProductInfoQueryHandlerCannotNilError()
@@ -69,14 +69,14 @@ func (h *GetProductInfoQueryHandler) Handle(
 
 	campaignService := services.NewCampaignService(campaign)
 
-	if err := campaignService.ApplyCampaign(product, h.systemTime.Time()); err != nil {
+	if _, err := campaignService.ApplyCampaign(product, h.systemTime.Time()); err != nil {
 		return nil, err
 	}
 
-	return NewGetProductInfoQueryResponse(product.Code(), product.Price(), product.Stock()), nil
+	return NewResponse(product.Code(), product.Price(), product.Stock()), nil
 }
 
-func (h *GetProductInfoQueryHandler) validate() error {
+func (h *Handler) validate() error {
 	if h.productRepository == nil {
 		return application.ThrowProductRepositoryCannotBeNil()
 	}

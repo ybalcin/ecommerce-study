@@ -78,25 +78,13 @@ func (c *Collection) Find(ctx context.Context, filter interface{}, decode interf
 	return nil
 }
 
-// Aggregate aggregates collection
-func (c *Collection) Aggregate(ctx context.Context, pipeline interface{}, decodeModels interface{}) error {
+// DeleteMany deletes documents from collection
+func (c *Collection) DeleteMany(ctx context.Context, filter interface{}) error {
 	if c == nil || c.collection == nil {
 		return ThrowNilCollectionError()
 	}
 
-	if decodeModels == nil {
-		return ThrowDecodeModelIsNilError()
-	}
-
-	cursor, err := c.collection.Aggregate(ctx, pipeline)
-	if err != nil {
-		return err
-	}
-
-	defer cursorClose(cursor, ctx)
-
-	err = cursor.All(ctx, decodeModels)
-	if err != nil {
+	if _, err := c.collection.DeleteMany(ctx, filter); err != nil {
 		return err
 	}
 

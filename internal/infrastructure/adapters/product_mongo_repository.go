@@ -110,3 +110,12 @@ func (r *productMongoRepository) UpdateProductStock(ctx context.Context, product
 
 	return nil
 }
+
+// DropProducts deletes all products
+func (r *productMongoRepository) DropProducts(ctx context.Context) error {
+	if err := r.products.DeleteMany(ctx, bson.D{}); err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -1,4 +1,4 @@
-package commands
+package createproduct
 
 import (
 	"context"
@@ -7,24 +7,24 @@ import (
 	"github.com/ybalcin/ecommerce-study/internal/domain/repositories"
 )
 
-type CreateProductCommand struct {
+type Command struct {
 	ProductCode string
 	Price       int
 	Stock       int
 }
 
-type CreateProductCommandHandler struct {
+type Handler struct {
 	productRepository repositories.ProductRepository
 }
 
-// NewCreateProductCommandHandler initializes new AddProductCommandHandler
-func NewCreateProductCommandHandler(productRepository repositories.ProductRepository) *CreateProductCommandHandler {
-	return &CreateProductCommandHandler{
+// NewHandler initializes new AddProductCommandHandler
+func NewHandler(productRepository repositories.ProductRepository) *Handler {
+	return &Handler{
 		productRepository: productRepository,
 	}
 }
 
-func (h *CreateProductCommandHandler) Handle(ctx context.Context, c *CreateProductCommand) (*createProductResponse, error) {
+func (h *Handler) Handle(ctx context.Context, c *Command) (*response, error) {
 	if h == nil {
 		return nil, application.ThrowCreateProductCommandHandlerCannotBeNilError()
 	}
@@ -46,10 +46,10 @@ func (h *CreateProductCommandHandler) Handle(ctx context.Context, c *CreateProdu
 		return nil, err
 	}
 
-	return NewCreateProductResponse(product.Code(), product.Price(), product.Stock()), nil
+	return NewResponse(product.Code(), product.Price(), product.Stock()), nil
 }
 
-func (h *CreateProductCommandHandler) validate() error {
+func (h *Handler) validate() error {
 	if h.productRepository == nil {
 		return application.ThrowProductRepositoryCannotBeNil()
 	}

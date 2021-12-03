@@ -12,4 +12,7 @@ type OrderRepository interface {
 
 	// AddOrder adds order to collection
 	AddOrder(ctx context.Context, order *domain.Order) error
+
+	// DropOrders deletes all orders
+	DropOrders(ctx context.Context) error
 }

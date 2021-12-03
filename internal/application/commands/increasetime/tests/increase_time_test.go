@@ -1,8 +1,8 @@
-package commands_test
+package increasetime_test
 
 import (
 	"github.com/ybalcin/ecommerce-study/internal/application"
-	"github.com/ybalcin/ecommerce-study/internal/application/commands"
+	"github.com/ybalcin/ecommerce-study/internal/application/commands/increasetime"
 	"testing"
 )
 
@@ -11,9 +11,9 @@ func TestNewIncreaseHourCommandHandler(t *testing.T) {
 
 	sysTimeSnapshot := sysTime.Time()
 
-	increaseHourCommandHandler := commands.NewIncreaseTimeCommandHandler(sysTime)
+	increaseHourCommandHandler := increasetime.NewHandler(sysTime)
 
-	increaseHourCommandHandler.Handle(&commands.IncreaseTimeCommand{Hours: 2})
+	increaseHourCommandHandler.Handle(&increasetime.Command{Hours: 2})
 
 	if !sysTime.Time().After(sysTimeSnapshot) {
 		t.Fail()

@@ -4,8 +4,12 @@ import (
 	"context"
 	"errors"
 	"github.com/ybalcin/ecommerce-study/internal/application"
-	"github.com/ybalcin/ecommerce-study/internal/application/commands"
-	"github.com/ybalcin/ecommerce-study/internal/application/queries"
+	"github.com/ybalcin/ecommerce-study/internal/application/commands/createcampaign"
+	"github.com/ybalcin/ecommerce-study/internal/application/commands/createorder"
+	"github.com/ybalcin/ecommerce-study/internal/application/commands/createproduct"
+	"github.com/ybalcin/ecommerce-study/internal/application/commands/increasetime"
+	"github.com/ybalcin/ecommerce-study/internal/application/queries/getcampaigninfo"
+	"github.com/ybalcin/ecommerce-study/internal/application/queries/getproductinfo"
 	"github.com/ybalcin/ecommerce-study/internal/infrastructure/adapters"
 	"github.com/ybalcin/ecommerce-study/pkg/mgo"
 )
@@ -17,15 +21,15 @@ type Application struct {
 }
 
 type Queries struct {
-	GetCampaignInfo *queries.GetCampaignInfoQueryHandler
-	GetProductInfo  *queries.GetProductInfoQueryHandler
+	GetCampaignInfo *getcampaigninfo.Handler
+	GetProductInfo  *getproductinfo.Handler
 }
 
 type Commands struct {
-	CreateCampaign *commands.CreateCampaignCommandHandler
-	CreateOrder    *commands.CreateOrderCommandHandler
-	CreateProduct  *commands.CreateProductCommandHandler
-	IncreaseTime   *commands.IncreaseTimeCommandHandler
+	CreateCampaign *createcampaign.Handler
+	CreateOrder    *createorder.Handler
+	CreateProduct  *createproduct.Handler
+	IncreaseTime   *increasetime.Handler
 }
 
 // New initializes new application
@@ -46,19 +50,29 @@ func New(ctx context.Context) *Application {
 	orderMgoRepository, err := adapters.NewOrderRepository(mgoStore)
 	checkPanic(err)
 
-	createCampaignCommandHandler := commands.NewCreateCampaignCommandHandler(campaignMgoRepository, sysTime)
+	// TODO: Remove collections for test purpose only
+	err = campaignMgoRepository.DropCampaigns(ctx)
+	checkPanic(err)
 
-	createOrderCommandHandler := commands.NewCreateOrderCommandHandler(
+	err = orderMgoRepository.DropOrders(ctx)
+	checkPanic(err)
+
+	err = productMgoRepository.DropProducts(ctx)
+	checkPanic(err)
+
+	createCampaignCommandHandler := createcampaign.NewHandler(campaignMgoRepository, sysTime)
+
+	createOrderCommandHandler := createorder.NewHandler(
 		orderMgoRepository, productMgoRepository, campaignMgoRepository, sysTime)
 
-	createProductCommandHandler := commands.NewCreateProductCommandHandler(productMgoRepository)
+	createProductCommandHandler := createproduct.NewHandler(productMgoRepository)
 
-	increaseTimeCommandHandler := commands.NewIncreaseTimeCommandHandler(sysTime)
+	increaseTimeCommandHandler := increasetime.NewHandler(sysTime)
 
-	getCampaignInfoQueryHandler := queries.NewGetCampaignInfoQueryHandler(campaignMgoRepository, orderMgoRepository,
+	getCampaignInfoQueryHandler := getcampaigninfo.NewHandler(campaignMgoRepository, orderMgoRepository,
 		productMgoRepository, sysTime)
 
-	getProductInfoQueryHandler := queries.NewGetProductInfoQueryHandler(productMgoRepository, campaignMgoRepository,
+	getProductInfoQueryHandler := getproductinfo.NewHandler(productMgoRepository, campaignMgoRepository,
 		orderMgoRepository, sysTime)
 
 	return &Application{

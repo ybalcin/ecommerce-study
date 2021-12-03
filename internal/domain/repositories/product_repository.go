@@ -15,4 +15,7 @@ type ProductRepository interface {
 
 	// UpdateProductStock updates product
 	UpdateProductStock(ctx context.Context, product *domain.Product) error
+
+	// DropProducts deletes all products
+	DropProducts(ctx context.Context) error
 }

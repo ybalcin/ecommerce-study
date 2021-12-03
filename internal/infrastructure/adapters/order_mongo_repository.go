@@ -75,6 +75,15 @@ func (r *OrderRepository) AddOrder(ctx context.Context, order *domain.Order) err
 	return nil
 }
 
+// DropOrders deletes all orders
+func (r *OrderRepository) DropOrders(ctx context.Context) error {
+	if err := r.orders.DeleteMany(ctx, bson.D{}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (o *orderBson) mapToOrder() (*domain.Order, error) {
 	order, err := domain.NewOrder(o.ProductCode, o.Quantity, o.UnitSalePrice)
 	if err != nil {

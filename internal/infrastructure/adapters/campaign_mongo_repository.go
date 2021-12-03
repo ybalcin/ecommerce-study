@@ -161,6 +161,15 @@ func (r *campaignRepository) UpdateCampaignTurnOverSales(ctx context.Context, ca
 	return nil
 }
 
+// DropCampaigns deletes all campaigns
+func (r *campaignRepository) DropCampaigns(ctx context.Context) error {
+	if err := r.campaigns.DeleteMany(ctx, bson.D{}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *campaignBson) mapToCampaign() (*domain.Campaign, error) {
 	campaign, err := domain.NewCampaign(
 		c.Id.Hex(),
@@ -178,23 +187,4 @@ func (c *campaignBson) mapToCampaign() (*domain.Campaign, error) {
 	}
 
 	return campaign, nil
-}
-
-func mapToCampaignBson(campaign *domain.Campaign) (*campaignBson, error) {
-	id, err := primitive.ObjectIDFromHex(campaign.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	return &campaignBson{
-		Id:                     id,
-		Name:                   campaign.Name(),
-		ProductCode:            campaign.ProductCode(),
-		Duration:               campaign.Duration(),
-		PriceManipulationLimit: campaign.PriceManipulationLimit(),
-		TargetSalesCount:       campaign.TargetSalesCount(),
-		SalesCount:             campaign.SalesCount(),
-		TurnOver:               campaign.TurnOver(),
-		CreatedAt:              campaign.CreatedAt(),
-	}, nil
 }

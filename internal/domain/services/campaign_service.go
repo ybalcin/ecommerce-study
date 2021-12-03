@@ -25,8 +25,13 @@ func (s *CampaignService) ApplyCampaignAndUpdateFields(
 	orderTotalPrice int,
 	systemTime time.Time) error {
 
-	if err := s.ApplyCampaign(product, systemTime); err != nil {
+	ok, err := s.ApplyCampaign(product, systemTime)
+	if err != nil {
 		return err
+	}
+
+	if !ok {
+		return nil
 	}
 
 	s.campaign.UpdateSalesCount(orderQuantity)
@@ -35,20 +40,20 @@ func (s *CampaignService) ApplyCampaignAndUpdateFields(
 	return nil
 }
 
-// ApplyCampaign applies campaign to product
-func (s *CampaignService) ApplyCampaign(product *domain.Product, systemTime time.Time) error {
+// ApplyCampaign applies campaign to product, if campaign could not apply then returns false
+func (s *CampaignService) ApplyCampaign(product *domain.Product, systemTime time.Time) (bool, error) {
 	if !s.campaign.IsActive(systemTime) {
-		return nil
+		return false, nil
 	}
 
 	if s.campaign.ProductCode() != product.Code() {
-		return errors.ThrowCampaignApplyProductCodesNotEqualError()
+		return false, errors.ThrowCampaignApplyProductCodesNotEqualError()
 	}
 
 	discountRate := s.campaign.CalculateDiscountRate(systemTime)
 	applyCampaign(product, discountRate)
 
-	return nil
+	return true, nil
 }
 
 // CalculateAverageSalePrice calculates average sale price of campaign

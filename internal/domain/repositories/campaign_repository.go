@@ -18,4 +18,7 @@ type CampaignRepository interface {
 
 	// UpdateCampaignTurnOverSales updates campaign turn over and sales count
 	UpdateCampaignTurnOverSales(ctx context.Context, campaign *domain.Campaign) error
+
+	// DropCampaigns deletes all campaigns
+	DropCampaigns(ctx context.Context) error
 }
