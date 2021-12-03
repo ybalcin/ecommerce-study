@@ -53,6 +53,10 @@ func (s *CampaignService) ApplyCampaign(product *domain.Product, systemTime time
 
 // CalculateAverageSalePrice calculates average sale price of campaign
 func (s *CampaignService) CalculateAverageSalePrice(orders []domain.Order) int {
+	if orders == nil {
+		return 0
+	}
+
 	totalOrder := len(orders)
 	var unitPriceSum int
 

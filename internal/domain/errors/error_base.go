@@ -16,3 +16,7 @@ func NewError(err error) *ErrorBase {
 func (e ErrorBase) String() string {
 	return fmt.Sprintf("domain: %s", e.Message)
 }
+
+func (e ErrorBase) Error() string {
+	return fmt.Sprintf("domain: %s", e.Message)
+}

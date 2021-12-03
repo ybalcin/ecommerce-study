@@ -4,6 +4,7 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Collection is mongo collection
@@ -33,8 +34,12 @@ func (c *Collection) InsertOne(ctx context.Context, document interface{}) (*mong
 
 // FindOne finds document from collection
 func (c *Collection) FindOne(ctx context.Context, filter interface{}, decode interface{}) error {
-	if decode == nil {
+	if c == nil || c.collection == nil {
 		return ThrowNilCollectionError()
+	}
+
+	if decode == nil {
+		return ThrowDecodeModelIsNilError()
 	}
 
 	if err := c.collection.FindOne(ctx, filter).Decode(decode); err != nil {
@@ -49,12 +54,16 @@ func (c *Collection) FindOne(ctx context.Context, filter interface{}, decode int
 }
 
 // Find finds one or many document
-func (c *Collection) Find(ctx context.Context, filter interface{}, decode interface{}) error {
+func (c *Collection) Find(ctx context.Context, filter interface{}, decode interface{}, opts ...*options.FindOptions) error {
+	if c == nil || c.collection == nil {
+		return ThrowNilCollectionError()
+	}
+
 	if decode == nil {
 		return ThrowDecodeModelIsNilError()
 	}
 
-	cursor, err := c.collection.Find(ctx, filter)
+	cursor, err := c.collection.Find(ctx, filter, opts...)
 	if err != nil {
 		return err
 	}
@@ -69,8 +78,37 @@ func (c *Collection) Find(ctx context.Context, filter interface{}, decode interf
 	return nil
 }
 
+// Aggregate aggregates collection
+func (c *Collection) Aggregate(ctx context.Context, pipeline interface{}, decodeModels interface{}) error {
+	if c == nil || c.collection == nil {
+		return ThrowNilCollectionError()
+	}
+
+	if decodeModels == nil {
+		return ThrowDecodeModelIsNilError()
+	}
+
+	cursor, err := c.collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return err
+	}
+
+	defer cursorClose(cursor, ctx)
+
+	err = cursor.All(ctx, decodeModels)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // UpdateOne updates one
 func (c *Collection) UpdateOne(ctx context.Context, filter interface{}, update interface{}) error {
+	if c == nil || c.collection == nil {
+		return ThrowNilCollectionError()
+	}
+
 	_, err := c.collection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err

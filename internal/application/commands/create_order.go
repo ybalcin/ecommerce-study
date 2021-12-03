@@ -2,7 +2,7 @@ package commands
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"github.com/ybalcin/ecommerce-study/internal/application"
 	"github.com/ybalcin/ecommerce-study/internal/domain"
 	"github.com/ybalcin/ecommerce-study/internal/domain/repositories"
@@ -55,25 +55,29 @@ func (h *CreateOrderCommandHandler) Handle(ctx context.Context, c *CreateOrderCo
 		return nil, err
 	}
 	if product == nil {
-		return nil, errors.New("product not found")
+		return nil, application.ThrowProductNotFoundError(c.ProductCode)
+	}
+	if !product.InStock() {
+		return nil, application.ThrowProductOutOfStockError(c.ProductCode)
 	}
 
-	if !product.InStock() {
-		return nil, errors.New("product out of stock")
+	if c.Quantity > product.Stock() {
+		return nil, application.ThrowProductOutOfStockError(c.ProductCode)
 	}
 
 	campaign, err := h.campaignRepository.GetLatestCampaign(ctx, product.Code())
 	if err != nil {
 		return nil, err
 	}
+	if campaign == nil {
+		return nil, application.ThrowCampaignNotFoundError(fmt.Sprintf("for %s product", c.ProductCode))
+	}
 
 	campaignService := services.NewCampaignService(campaign)
 
-	if campaign != nil {
-		err = campaignService.ApplyCampaignAndUpdateFields(product, c.Quantity, c.Quantity*product.Price(), h.systemTime.Time())
-		if err != nil {
-			return nil, err
-		}
+	err = campaignService.ApplyCampaignAndUpdateFields(product, c.Quantity, c.Quantity*product.Price(), h.systemTime.Time())
+	if err != nil {
+		return nil, err
 	}
 
 	order, err := domain.NewOrder(c.ProductCode, c.Quantity, product.Price())
@@ -85,14 +89,16 @@ func (h *CreateOrderCommandHandler) Handle(ctx context.Context, c *CreateOrderCo
 		return nil, err
 	}
 
-	defer func(hh *CreateOrderCommandHandler, prd *domain.Product) {
-		product.ReduceStock(order.Quantity())
-		hh.productRepository.UpdateProduct(ctx, product)
-	}(h, product)
+	product.ReduceStock(order.Quantity())
+	err = h.productRepository.UpdateProductStock(ctx, product)
+	if err != nil {
+		return nil, err
+	}
 
-	defer func(hh *CreateOrderCommandHandler, camp *domain.Campaign) {
-		h.campaignRepository.UpdateCampaign(ctx, campaign)
-	}(h, campaign)
+	err = h.campaignRepository.UpdateCampaignTurnOverSales(ctx, campaign)
+	if err != nil {
+		return nil, err
+	}
 
 	return NewCreateOrderResponse(order.ProductCode(), order.Quantity()), nil
 }

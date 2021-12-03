@@ -54,6 +54,9 @@ func (h *GetCampaignInfoQueryHandler) Handle(
 	if err != nil {
 		return nil, err
 	}
+	if campaign == nil {
+		return nil, application.ThrowCampaignNotFoundError(q.Name)
+	}
 
 	orders, err := h.orderRepository.GetOrders(ctx, campaign.ProductCode())
 	if err != nil {

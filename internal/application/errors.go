@@ -1,6 +1,9 @@
 package application
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 const (
 	campaignRepositoryIsNilError string = "campaign repository nil"
@@ -24,6 +27,12 @@ const (
 	getProductInfoQueryHandlerNilError  string = "get product info query handler nil"
 
 	systemTimeNilError string = "system time nil"
+
+	campaignNotFoundError  string = "%s campaign not found"
+	orderCouldNotCreated   string = "%s %d order could not created"
+	productCouldNotCreated string = "%s product could not created"
+	productNotFoundError   string = "%s product not found"
+	productOutOfStockError string = "%s product out of stock"
 )
 
 func ThrowCampaignRepositoryCannotBeNilError() error {
@@ -88,4 +97,24 @@ func ThrowGetCampaignInfoQueryNilError() error {
 
 func ThrowGetProductInfoQueryNilError() error {
 	return errors.New(getProductInfoQueryNilError)
+}
+
+func ThrowCampaignNotFoundError(name string) error {
+	return fmt.Errorf(campaignNotFoundError, name)
+}
+
+func ThrowOrderCouldNotCreated(pCode string, quantity int) error {
+	return fmt.Errorf(orderCouldNotCreated, pCode, quantity)
+}
+
+func ThrowProductCouldNotCreated(pCode string) error {
+	return fmt.Errorf(productCouldNotCreated, pCode)
+}
+
+func ThrowProductNotFoundError(pCode string) error {
+	return fmt.Errorf(productNotFoundError, pCode)
+}
+
+func ThrowProductOutOfStockError(pCode string) error {
+	return fmt.Errorf(productOutOfStockError, pCode)
 }

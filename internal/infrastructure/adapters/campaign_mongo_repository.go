@@ -7,7 +7,7 @@ import (
 	"github.com/ybalcin/ecommerce-study/pkg/mgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -72,16 +72,25 @@ func (r *campaignRepository) AddCampaign(ctx context.Context, campaign *domain.C
 
 // GetCampaign gets campaign info
 func (r *campaignRepository) GetCampaign(ctx context.Context, name string) (*domain.Campaign, error) {
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{"_id", -1}})
+	findOptions.SetLimit(1)
+
 	filter := bson.M{
 		"name": name,
 	}
 
-	campaignBson := new(campaignBson)
+	var sCampaignBson []campaignBson
 
-	if err := r.campaigns.FindOne(ctx, filter, campaignBson); err != nil {
+	if err := r.campaigns.Find(ctx, filter, &sCampaignBson, findOptions); err != nil {
 		return nil, err
 	}
 
+	if len(sCampaignBson) <= 0 {
+		return nil, nil
+	}
+
+	campaignBson := sCampaignBson[0]
 	if !campaignBson.hasValue() {
 		return nil, nil
 	}
@@ -96,22 +105,25 @@ func (r *campaignRepository) GetCampaign(ctx context.Context, name string) (*dom
 
 // GetLatestCampaign gets the latest campaign of product
 func (r *campaignRepository) GetLatestCampaign(ctx context.Context, productCode string) (*domain.Campaign, error) {
-	filterStage := bson.D{
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{"_id", -1}})
+	findOptions.SetLimit(1)
+
+	filter := bson.D{
 		{"product_code", productCode},
 	}
 
-	sortStage := bson.D{
-		{"$sort", bson.M{
-			"created_at": -1,
-		}},
-	}
+	var sCampaignBson []campaignBson
 
-	campaignBson := new(campaignBson)
-
-	if err := r.campaigns.FindOne(ctx, mongo.Pipeline{filterStage, sortStage}, campaignBson); err != nil {
+	if err := r.campaigns.Find(ctx, filter, &sCampaignBson, findOptions); err != nil {
 		return nil, err
 	}
 
+	if len(sCampaignBson) <= 0 {
+		return nil, nil
+	}
+
+	campaignBson := sCampaignBson[0]
 	if !campaignBson.hasValue() {
 		return nil, nil
 	}
@@ -124,8 +136,8 @@ func (r *campaignRepository) GetLatestCampaign(ctx context.Context, productCode 
 	return campaign, nil
 }
 
-// UpdateCampaign updates campaign
-func (r *campaignRepository) UpdateCampaign(ctx context.Context, campaign *domain.Campaign) error {
+// UpdateCampaignTurnOverSales updates campaign
+func (r *campaignRepository) UpdateCampaignTurnOverSales(ctx context.Context, campaign *domain.Campaign) error {
 	id, err := primitive.ObjectIDFromHex(campaign.Id())
 	if err != nil {
 		return err
@@ -135,12 +147,14 @@ func (r *campaignRepository) UpdateCampaign(ctx context.Context, campaign *domai
 		"_id": id,
 	}
 
-	campaignBson, err := mapToCampaignBson(campaign)
-	if err != nil {
-		return err
+	updates := bson.D{
+		{"$set", bson.D{
+			{"turn_over", campaign.TurnOver()},
+			{"sales_count", campaign.SalesCount()},
+		}},
 	}
 
-	if err = r.campaigns.UpdateOne(ctx, filter, campaignBson); err != nil {
+	if err = r.campaigns.UpdateOne(ctx, filter, updates); err != nil {
 		return err
 	}
 

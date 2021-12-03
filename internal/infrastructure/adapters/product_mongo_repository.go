@@ -7,6 +7,7 @@ import (
 	"github.com/ybalcin/ecommerce-study/pkg/mgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // productBson is collection store model
@@ -60,15 +61,25 @@ func (r *productMongoRepository) AddProduct(ctx context.Context, product *domain
 
 // GetProduct gets product from collection
 func (r *productMongoRepository) GetProduct(ctx context.Context, productCode string) (*domain.Product, error) {
-	productBson := new(productBson)
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{"_id", -1}})
+	findOptions.SetLimit(1)
 
-	if err := r.products.FindOne(ctx, bson.M{"code": productCode}, productBson); err != nil {
+	filter := bson.D{
+		{"code", productCode},
+	}
+
+	var sProductBson []productBson
+
+	if err := r.products.Find(ctx, filter, &sProductBson, findOptions); err != nil {
 		return nil, err
 	}
 
-	if !productBson.hasValue() {
+	if len(sProductBson) <= 0 {
 		return nil, nil
 	}
+
+	productBson := sProductBson[0]
 
 	productModel, err := domain.NewProduct(productBson.Id.Hex(), productBson.Code, productBson.Price, productBson.Stock)
 	if err != nil {
@@ -78,8 +89,8 @@ func (r *productMongoRepository) GetProduct(ctx context.Context, productCode str
 	return productModel, nil
 }
 
-// UpdateProduct updates product
-func (r *productMongoRepository) UpdateProduct(ctx context.Context, product *domain.Product) error {
+// UpdateProductStock updates product
+func (r *productMongoRepository) UpdateProductStock(ctx context.Context, product *domain.Product) error {
 	id, err := primitive.ObjectIDFromHex(product.Id())
 	if err != nil {
 		return err
@@ -89,7 +100,11 @@ func (r *productMongoRepository) UpdateProduct(ctx context.Context, product *dom
 		"_id": id,
 	}
 
-	if err := r.products.UpdateOne(ctx, find, product); err != nil {
+	updates := bson.D{
+		{"$set", bson.D{{"stock", product.Stock()}}},
+	}
+
+	if err := r.products.UpdateOne(ctx, find, updates); err != nil {
 		return err
 	}
 

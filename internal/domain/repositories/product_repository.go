@@ -13,6 +13,6 @@ type ProductRepository interface {
 	// GetProduct gets product from collection
 	GetProduct(ctx context.Context, productCode string) (*domain.Product, error)
 
-	// UpdateProduct updates product
-	UpdateProduct(ctx context.Context, product *domain.Product) error
+	// UpdateProductStock updates product
+	UpdateProductStock(ctx context.Context, product *domain.Product) error
 }

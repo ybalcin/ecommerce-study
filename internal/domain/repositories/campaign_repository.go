@@ -16,6 +16,6 @@ type CampaignRepository interface {
 	// GetLatestCampaign gets the latest campaign of product
 	GetLatestCampaign(ctx context.Context, productCode string) (*domain.Campaign, error)
 
-	// UpdateCampaign updates campaign
-	UpdateCampaign(ctx context.Context, campaign *domain.Campaign) error
+	// UpdateCampaignTurnOverSales updates campaign turn over and sales count
+	UpdateCampaignTurnOverSales(ctx context.Context, campaign *domain.Campaign) error
 }

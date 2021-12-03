@@ -2,6 +2,7 @@ package queries
 
 import (
 	"context"
+	"fmt"
 	"github.com/ybalcin/ecommerce-study/internal/application"
 	"github.com/ybalcin/ecommerce-study/internal/domain/repositories"
 	"github.com/ybalcin/ecommerce-study/internal/domain/services"
@@ -54,18 +55,22 @@ func (h *GetProductInfoQueryHandler) Handle(
 	if err != nil {
 		return nil, err
 	}
+	if product == nil {
+		return nil, application.ThrowProductNotFoundError(q.Code)
+	}
 
 	campaign, err := h.campaignRepository.GetLatestCampaign(ctx, product.Code())
 	if err != nil {
 		return nil, err
 	}
+	if campaign == nil {
+		return nil, application.ThrowCampaignNotFoundError(fmt.Sprintf("for %s product", q.Code))
+	}
 
 	campaignService := services.NewCampaignService(campaign)
 
-	if campaign != nil {
-		if err := campaignService.ApplyCampaign(product, h.systemTime.Time()); err != nil {
-			return nil, err
-		}
+	if err := campaignService.ApplyCampaign(product, h.systemTime.Time()); err != nil {
+		return nil, err
 	}
 
 	return NewGetProductInfoQueryResponse(product.Code(), product.Price(), product.Stock()), nil
