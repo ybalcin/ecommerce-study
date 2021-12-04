@@ -32,7 +32,7 @@ func Execute() {
 
 		pwd, _ := os.Getwd()
 
-		file, err := os.Open(fmt.Sprintf("%s/internal/cmd/cli/cases/c_%d.txt", pwd, i))
+		file, err := os.Open(fmt.Sprintf("%s/cmd/cli/cases/c_%d.txt", pwd, i))
 		if err != nil {
 			log.Fatalln(err)
 		}
