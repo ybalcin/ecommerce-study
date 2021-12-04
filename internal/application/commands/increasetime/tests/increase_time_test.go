@@ -1,21 +1,49 @@
 package increasetime_test
 
 import (
+	"github.com/stretchr/testify/assert"
 	"github.com/ybalcin/ecommerce-study/internal/application"
 	"github.com/ybalcin/ecommerce-study/internal/application/commands/increasetime"
 	"testing"
 )
 
-func TestNewIncreaseHourCommandHandler(t *testing.T) {
-	sysTime := application.NewSystemTime()
+func TestHandler_Handle(t *testing.T) {
+	testCases := []struct {
+		t    string
+		h    *increasetime.Handler
+		c    *increasetime.Command
+		fail bool
+	}{
+		{
+			"handler nil",
+			nil,
+			new(increasetime.Command),
+			true,
+		},
+		{
+			"sysTime nil",
+			increasetime.NewHandler(nil),
+			new(increasetime.Command),
+			true,
+		},
+		{
+			"command nil",
+			increasetime.NewHandler(new(application.SystemTime)),
+			nil,
+			true,
+		},
+	}
 
-	sysTimeSnapshot := sysTime.Time()
-
-	increaseHourCommandHandler := increasetime.NewHandler(sysTime)
-
-	increaseHourCommandHandler.Handle(&increasetime.Command{Hours: 2})
-
-	if !sysTime.Time().After(sysTimeSnapshot) {
-		t.Fail()
+	for _, c := range testCases {
+		t.Run(c.t, func(t *testing.T) {
+			resp, err := c.h.Handle(c.c)
+			if c.fail {
+				assert.Nil(t, resp)
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+				assert.NotNil(t, resp)
+			}
+		})
 	}
 }
