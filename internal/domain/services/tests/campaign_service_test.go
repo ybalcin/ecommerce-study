@@ -23,9 +23,12 @@ func TestCampaignService_ApplyCampaign(t *testing.T) {
 		duration               int
 		sysTime                time.Time
 		expected               int
+		ok                     bool
 	}{
-		{"p1", 100, 20, 5, newSysTime(), 95},
-		{"p1", 100, 20, 5, newSysTime().Add(time.Hour), 90},
+		{"p1", 100, 20, 5, newSysTime(), 95, true},
+		{"p1", 100, 20, 5, newSysTime().Add(time.Hour), 90, true},
+		{"p2", 100, 20, 5, newSysTime().Add(time.Hour), 100, false},
+		{"p1", 100, 20, 5, newSysTime().Add(time.Hour * time.Duration(5)), 100, false},
 	}
 
 	for _, c := range testCases {
@@ -45,8 +48,48 @@ func TestCampaignService_ApplyCampaign(t *testing.T) {
 
 		campaignService := services.NewCampaignService(campaign)
 
-		err = campaignService.ApplyCampaign(product, c.sysTime)
-		assert.Nil(t, err)
+		ok, err := campaignService.ApplyCampaign(product, c.sysTime)
+
 		assert.Equal(t, c.expected, product.Price())
+		assert.Equal(t, c.ok, ok)
+	}
+}
+
+func TestCampaignService_CalculateAverageSalePrice(t *testing.T) {
+	testCases := []struct {
+		orderLength   int
+		unitSalePrice int
+		expected      int
+	}{
+		{2, 10, 10},
+		{0, 10, 0},
+		{1, 10, 10},
+	}
+
+	for _, c := range testCases {
+		var orders []domain.Order
+		for i := 0; i < c.orderLength; i++ {
+			order, err := domain.NewOrder("p1", 1, c.unitSalePrice)
+			assert.Nil(t, err)
+
+			orders = append(orders, *order)
+		}
+
+		campaign, err := domain.NewCampaign(
+			"",
+			dummy,
+			"asd",
+			2,
+			1,
+			2,
+			1,
+			1,
+			time.Now())
+		assert.Nil(t, err)
+
+		campaignService := services.NewCampaignService(campaign)
+
+		actual := campaignService.CalculateAverageSalePrice(orders)
+		assert.Equal(t, c.expected, actual)
 	}
 }

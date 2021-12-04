@@ -21,8 +21,8 @@ type Campaign struct {
 }
 
 const (
-	campaignStatusActive string = "Active"
-	campaignStatusEnded  string = "Ended"
+	CampaignStatusActive string = "Active"
+	CampaignStatusEnded  string = "Ended"
 )
 
 // validate validates model
@@ -38,6 +38,9 @@ func (c *Campaign) validate() error {
 	}
 	if c.priceManipulationLimit <= 0 || c.priceManipulationLimit > 100 {
 		return errors.ThrowCampaignPriceManipulationLimitIsInvalidError()
+	}
+	if c.targetSalesCount <= 0 {
+		return errors.ThrowCampaignTargetSalesCountIsInvalidError()
 	}
 
 	return nil
@@ -130,10 +133,10 @@ func (c *Campaign) IsActive(systemTime time.Time) bool {
 // Status returns current status of campaign
 func (c *Campaign) Status(systemTime time.Time) string {
 	if c.IsActive(systemTime) {
-		return campaignStatusActive
+		return CampaignStatusActive
 	}
 
-	return campaignStatusEnded
+	return CampaignStatusEnded
 }
 
 // TurnOver returns turnover price of campaign

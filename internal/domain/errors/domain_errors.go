@@ -15,9 +15,11 @@ var (
 	campaignDurationIsInvalidError               = errors.New("campaign duration is invalid")
 	campaignPriceManipulationLimitIsInvalidError = errors.New("campaign price manipulation limit is invalid")
 	campaignApplyProductCodesNotEqualError       = errors.New("campaign's product code and product's code not equal")
+	campaignTargetSalesCountIsInvalidError       = errors.New("campaign target sales count invalid")
 
-	orderProductCodeIsEmptyError = errors.New("product code of order is empty")
-	orderQuantityIsInvalidError  = errors.New("quantity of order is invalid")
+	orderProductCodeIsEmptyError     = errors.New("product code of order is empty")
+	orderQuantityIsInvalidError      = errors.New("quantity of order is invalid")
+	orderUnitSalePriceIsInvalidError = errors.New("unit sale of order is invalid")
 )
 
 func ThrowProductCodeShouldNotBeEmptyError() *DomainError {
@@ -68,8 +70,20 @@ func ThrowOrderQuantityIsInvalidError() *DomainError {
 	}
 }
 
+func ThrowOrderUnitSalePriceInvalidError() *DomainError {
+	return &DomainError{
+		ErrorBase: NewError(orderUnitSalePriceIsInvalidError),
+	}
+}
+
 func ThrowCampaignApplyProductCodesNotEqualError() *DomainError {
 	return &DomainError{
 		ErrorBase: NewError(campaignApplyProductCodesNotEqualError),
+	}
+}
+
+func ThrowCampaignTargetSalesCountIsInvalidError() *DomainError {
+	return &DomainError{
+		ErrorBase: NewError(campaignTargetSalesCountIsInvalidError),
 	}
 }

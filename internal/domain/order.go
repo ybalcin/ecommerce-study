@@ -51,6 +51,9 @@ func (o *Order) validate() error {
 	if o.quantity <= 0 {
 		return errors.ThrowOrderQuantityIsInvalidError()
 	}
+	if o.unitSalePrice <= 0 {
+		return errors.ThrowOrderUnitSalePriceInvalidError()
+	}
 
 	return nil
 }

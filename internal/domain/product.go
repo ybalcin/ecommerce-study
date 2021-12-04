@@ -50,6 +50,10 @@ func (p *Product) Code() string {
 
 // ReduceStock reduces stock
 func (p *Product) ReduceStock(val int) {
+	if val > p.stock {
+		return
+	}
+
 	p.stock -= val
 }
 
