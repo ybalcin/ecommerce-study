@@ -37,7 +37,7 @@ func Run() {
 			log.Fatalln(err)
 		}
 
-		fmt.Printf("\n > > -------------- READING c_%d.txt -------------- < < \n", i)
+		fmt.Printf("\n> > -------------- READING c_%d.txt -------------- < < \n", i)
 
 		scanner := bufio.NewScanner(file)
 

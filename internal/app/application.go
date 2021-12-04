@@ -36,6 +36,7 @@ type Commands struct {
 func New(ctx context.Context) *Application {
 	sysTime := application.NewSystemTime()
 
+	// TODO: json settings
 	mgoStore := mgo.NewStore(ctx, "mongodb+srv://ecommerce-user:B9VeLojwHUidkeHP@cluster0.l1pmb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", "ecommerce")
 	if mgoStore == nil {
 		panic(errors.New("mgo store nil"))
