@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	cli.Run()
+	cli.Execute()
 }

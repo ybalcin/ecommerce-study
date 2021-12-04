@@ -14,7 +14,6 @@ type Query struct {
 type Handler struct {
 	campaignRepository repositories.CampaignRepository
 	orderRepository    repositories.OrderRepository
-	productRepository  repositories.ProductRepository
 	systemTime         *application.SystemTime
 }
 
@@ -22,13 +21,11 @@ type Handler struct {
 func NewHandler(
 	campaignRepository repositories.CampaignRepository,
 	orderRepository repositories.OrderRepository,
-	productRepository repositories.ProductRepository,
 	systemTime *application.SystemTime) *Handler {
 
 	return &Handler{
 		campaignRepository: campaignRepository,
 		orderRepository:    orderRepository,
-		productRepository:  productRepository,
 		systemTime:         systemTime,
 	}
 }
@@ -75,9 +72,6 @@ func (h *Handler) Handle(
 }
 
 func (h *Handler) validate() error {
-	if h.productRepository == nil {
-		return application.ThrowProductRepositoryCannotBeNil()
-	}
 	if h.systemTime == nil {
 		return application.ThrowSystemTimeCannotBeNilError()
 	}

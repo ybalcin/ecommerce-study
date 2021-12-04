@@ -26,7 +26,7 @@ const (
 	getProductInfo  string = "get_product_info"
 )
 
-func Run() {
+func Execute() {
 	for i := 1; i <= 5; i++ {
 		cliPort := ports.NewCLI()
 

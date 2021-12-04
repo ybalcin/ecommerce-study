@@ -1,26 +1,26 @@
-package increasetime
+package getcampaigninfo_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/ybalcin/ecommerce-study/internal/application/commands/increasetime"
+	"github.com/ybalcin/ecommerce-study/internal/application/queries/getcampaigninfo"
 	"testing"
 )
 
 func TestBuild(t *testing.T) {
 	testCases := []struct {
 		t        string
-		cmd      string
-		expected *increasetime.Command
+		q        string
+		expected *getcampaigninfo.Query
 	}{
 		{
 			"cmd valid",
-			"increase_time 1",
-			&increasetime.Command{Hours: 1},
+			"get_campaign_info C11",
+			&getcampaigninfo.Query{Name: "C11"},
 		},
 		{
 			"cmd invalid",
-			"increase_time",
-			&increasetime.Command{Hours: 0},
+			"get_campaign_info",
+			&getcampaigninfo.Query{Name: ""},
 		},
 		{
 			"entry not equal",
@@ -28,7 +28,7 @@ func TestBuild(t *testing.T) {
 			nil,
 		},
 		{
-			"cmd empty",
+			"query empty",
 			"",
 			nil,
 		},
@@ -36,7 +36,7 @@ func TestBuild(t *testing.T) {
 
 	for _, c := range testCases {
 		t.Run(c.t, func(t *testing.T) {
-			actual := increasetime.Build(c.cmd)
+			actual := getcampaigninfo.Build(c.q)
 			assert.Equal(t, c.expected, actual)
 		})
 	}

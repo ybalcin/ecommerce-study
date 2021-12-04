@@ -63,6 +63,10 @@ func (s *CampaignService) CalculateAverageSalePrice(orders []domain.Order) int {
 	}
 
 	totalOrder := len(orders)
+	if totalOrder <= 0 {
+		return 0
+	}
+
 	var unitPriceSum int
 
 	for _, o := range orders {

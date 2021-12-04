@@ -70,11 +70,9 @@ func New(ctx context.Context) *Application {
 
 	increaseTimeCommandHandler := increasetime.NewHandler(sysTime)
 
-	getCampaignInfoQueryHandler := getcampaigninfo.NewHandler(campaignMgoRepository, orderMgoRepository,
-		productMgoRepository, sysTime)
+	getCampaignInfoQueryHandler := getcampaigninfo.NewHandler(campaignMgoRepository, orderMgoRepository, sysTime)
 
-	getProductInfoQueryHandler := getproductinfo.NewHandler(productMgoRepository, campaignMgoRepository,
-		orderMgoRepository, sysTime)
+	getProductInfoQueryHandler := getproductinfo.NewHandler(productMgoRepository, campaignMgoRepository, sysTime)
 
 	return &Application{
 		Queries: Queries{

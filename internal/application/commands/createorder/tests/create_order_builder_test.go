@@ -33,6 +33,11 @@ func TestBuild(t *testing.T) {
 			"dummy",
 			nil,
 		},
+		{
+			"cmd empty",
+			"",
+			nil,
+		},
 	}
 
 	for _, c := range testCases {

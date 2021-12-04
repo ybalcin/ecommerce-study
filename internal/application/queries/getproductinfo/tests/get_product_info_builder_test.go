@@ -1,26 +1,26 @@
-package increasetime
+package getproductinfo_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/ybalcin/ecommerce-study/internal/application/commands/increasetime"
+	"github.com/ybalcin/ecommerce-study/internal/application/queries/getproductinfo"
 	"testing"
 )
 
 func TestBuild(t *testing.T) {
 	testCases := []struct {
 		t        string
-		cmd      string
-		expected *increasetime.Command
+		q        string
+		expected *getproductinfo.Query
 	}{
 		{
 			"cmd valid",
-			"increase_time 1",
-			&increasetime.Command{Hours: 1},
+			"get_product_info P11",
+			&getproductinfo.Query{Code: "P11"},
 		},
 		{
 			"cmd invalid",
-			"increase_time",
-			&increasetime.Command{Hours: 0},
+			"get_product_info",
+			&getproductinfo.Query{Code: ""},
 		},
 		{
 			"entry not equal",
@@ -28,7 +28,7 @@ func TestBuild(t *testing.T) {
 			nil,
 		},
 		{
-			"cmd empty",
+			"query empty",
 			"",
 			nil,
 		},
@@ -36,7 +36,7 @@ func TestBuild(t *testing.T) {
 
 	for _, c := range testCases {
 		t.Run(c.t, func(t *testing.T) {
-			actual := increasetime.Build(c.cmd)
+			actual := getproductinfo.Build(c.q)
 			assert.Equal(t, c.expected, actual)
 		})
 	}
