@@ -2,7 +2,6 @@ package createorder
 
 import (
 	"context"
-	"fmt"
 	"github.com/ybalcin/ecommerce-study/internal/application"
 	"github.com/ybalcin/ecommerce-study/internal/domain"
 	"github.com/ybalcin/ecommerce-study/internal/domain/repositories"
@@ -69,15 +68,14 @@ func (h *Handler) Handle(ctx context.Context, c *Command) (*response, error) {
 	if err != nil {
 		return nil, err
 	}
-	if campaign == nil {
-		return nil, application.ThrowCampaignNotFoundError(fmt.Sprintf("for %s product", c.ProductCode))
-	}
 
-	campaignService := services.NewCampaignService(campaign)
+	if campaign != nil {
+		campaignService := services.NewCampaignService(campaign)
 
-	err = campaignService.ApplyCampaignAndUpdateFields(product, c.Quantity, c.Quantity*product.Price(), h.systemTime.Time())
-	if err != nil {
-		return nil, err
+		err = campaignService.ApplyCampaignAndUpdateFields(product, c.Quantity, c.Quantity*product.Price(), h.systemTime.Time())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	order, err := domain.NewOrder(c.ProductCode, c.Quantity, product.Price())
@@ -95,9 +93,11 @@ func (h *Handler) Handle(ctx context.Context, c *Command) (*response, error) {
 		return nil, err
 	}
 
-	err = h.campaignRepository.UpdateCampaignTurnOverSales(ctx, campaign)
-	if err != nil {
-		return nil, err
+	if campaign != nil {
+		err = h.campaignRepository.UpdateCampaignTurnOverSales(ctx, campaign)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return NewResponse(order.ProductCode(), order.Quantity()), nil

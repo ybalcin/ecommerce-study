@@ -106,18 +106,28 @@ func TestHandler_Handle(t *testing.T) {
 		},
 		{
 			"campaignRepository.GetLatestCampaign returns nil campaign",
-			createorder.NewHandler(new(repositories.MockOrderRepository), &repositories.MockProductRepository{
+			createorder.NewHandler(repositories.MockOrderRepository{
+				AddOrderFn: func(ctx context.Context, order *domain.Order) error {
+					return nil
+				},
+			}, &repositories.MockProductRepository{
 				GetProductFn: func(ctx context.Context, productCode string) (*domain.Product, error) {
 					p, _ := domain.NewProduct("", "p1", 1, 100)
 					return p, nil
+				},
+				UpdateProductStockFn: func(ctx context.Context, product *domain.Product) error {
+					return nil
 				},
 			}, repositories.MockCampaignRepository{
 				GetLatestCampaignFn: func(ctx context.Context, productCode string) (*domain.Campaign, error) {
 					return nil, nil
 				},
+				UpdateCampaignTurnOverSalesFn: func(ctx context.Context, campaign *domain.Campaign) error {
+					return nil
+				},
 			}, new(application.SystemTime)),
 			createorder.Build("create_order P11 10"),
-			true,
+			false,
 		},
 		{
 			"orderRepository.AddOrder returns err",
